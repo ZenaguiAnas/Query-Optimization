@@ -1,7 +1,7 @@
 from flask import Flask, request
 import sqlvalidator
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 
 @app.route('/ValidateSQL', methods=['GET'])
@@ -14,5 +14,5 @@ def validate_query():
     return "Valid SQL Query"
 
 
-if _name_ == '_main_':
+if __name__ == '__main__':
   app.run(port=5000)
