@@ -15,11 +15,12 @@ def validate_query():
     query = data.get('query', '')
 
     try:
+        print(query)
         # Utiliser sqlglot pour valider la syntaxe SQL
         parse(query)
 
         # Si la syntaxe de la requête est valide, retourner un objet JSON avec le résultat
-        return jsonify({'result': 'Valid SQL Query'})
+        return jsonify({'success': True, 'message': 'Valid SQL Query'})
     except ParseError as e:
         # Si une erreur de syntaxe est détectée, retourner un objet JSON avec le message d'erreur
         error_description = e.errors[0]['description']
@@ -30,6 +31,7 @@ def validate_query():
         end_context = e.errors[0]['end_context']
 
         return jsonify({
+            'success': False,
             'error': f"Invalid SQL Query: {error_description}. Error at line {line_number}, column {column_number}. Context: {context} {highlight} {end_context}"})
 
 
@@ -47,8 +49,10 @@ def execute_query_route():
     query = body['query']
     try:
         result = execute_query(query)
+        print(result)
         return {'result': json.loads(result)['result']}
     except Exception as e:
+        print(str(e))
         return {'error': str(e)}
 
 
@@ -68,9 +72,9 @@ def connect_db():
     import oracledb
 
     #  Connection string(todo : put it in a config file)
-    un = 'C##mohcine'
-    cs = '34.68.75.241/free'
-    pw = 'mohcine'
+    un = 'C##_BETTER_SQL'
+    cs = '98.66.161.52/free'
+    pw = 'better_password'
 
     connection = oracledb.connect(user=un, password=pw, dsn=cs)
     cursor = connection.cursor()
