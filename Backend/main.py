@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify
 from sqlglot import parse
 from sqlglot.errors import ParseError
 from flask_cors import CORS
+import oracledb
 
 app = Flask(__name__)
 CORS(app)
@@ -15,12 +16,11 @@ def validate_query():
     query = data.get('query', '')
 
     try:
-        print(query)
         # Utiliser sqlglot pour valider la syntaxe SQL
         parse(query)
 
         # Si la syntaxe de la requête est valide, retourner un objet JSON avec le résultat
-        return jsonify({'success': True, 'message': 'Valid SQL Query'})
+        return jsonify({'result': 'Valid SQL Query'})
     except ParseError as e:
         # Si une erreur de syntaxe est détectée, retourner un objet JSON avec le message d'erreur
         error_description = e.errors[0]['description']
@@ -31,7 +31,6 @@ def validate_query():
         end_context = e.errors[0]['end_context']
 
         return jsonify({
-            'success': False,
             'error': f"Invalid SQL Query: {error_description}. Error at line {line_number}, column {column_number}. Context: {context} {highlight} {end_context}"})
 
 
@@ -49,11 +48,22 @@ def execute_query_route():
     query = body['query']
     try:
         result = execute_query(query)
-        print(result)
         return {'result': json.loads(result)['result']}
     except Exception as e:
-        print(str(e))
         return {'error': str(e)}
+    
+@app.route('/connect_db', methods=['POST'])
+def connect_to_db():
+    body = request.json
+    username= body['username']
+    host = body['host']
+    password= body['password']
+    try:
+
+       cursor = connect_db(username, host, password)
+       return jsonify({'message': 'Connected to database successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 def execute_query(query):
@@ -68,13 +78,11 @@ def execute_query(query):
     return json.dumps(json_result)
 
 
-def connect_db():
-    import oracledb
-
-    #  Connection string(todo : put it in a config file)
-    un = 'C##_BETTER_SQL'
-    cs = '98.66.161.52/free'
-    pw = 'better_password'
+def connect_db(username, host, password):
+    # Connection string(todo : put it in a config file)
+    un = username
+    cs = host
+    pw = password
 
     connection = oracledb.connect(user=un, password=pw, dsn=cs)
     cursor = connection.cursor()
@@ -92,6 +100,12 @@ def get_execution_plan(query):
         json_plan['execution_plan'].append(dict(zip([d[0] for d in cursor.description], row)))
 
     return json.dumps(json_plan)
+
+
+
+@app.route('/test1', methods=['GET'])
+def test():
+    return "anas"
 
 
 if __name__ == '__main__':
