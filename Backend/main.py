@@ -52,7 +52,7 @@ def execute_query_route():
     except Exception as e:
         return {'error': str(e)}
     
-@app.route('/test', methods=['POST'])
+@app.route('/connect_db', methods=['POST'])
 def connect_to_db():
     body = request.json
     username= body['username']
