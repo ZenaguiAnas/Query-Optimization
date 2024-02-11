@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify
 from sqlglot import parse
 from sqlglot.errors import ParseError
 from flask_cors import CORS
+import oracledb
 
 app = Flask(__name__)
 CORS(app)
@@ -50,6 +51,19 @@ def execute_query_route():
         return {'result': json.loads(result)['result']}
     except Exception as e:
         return {'error': str(e)}
+    
+@app.route('/test', methods=['POST'])
+def connect_to_db():
+    body = request.json
+    username= body['username']
+    host = body['host']
+    password= body['password']
+    try:
+
+       cursor = connect_db(username, host, password)
+       return jsonify({'message': 'Connected to database successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 def execute_query(query):
@@ -64,13 +78,11 @@ def execute_query(query):
     return json.dumps(json_result)
 
 
-def connect_db():
-    import oracledb
-
-    #  Connection string(todo : put it in a config file)
-    un = 'C##mohcine'
-    cs = '34.68.75.241/free'
-    pw = 'mohcine'
+def connect_db(username, host, password):
+    # Connection string(todo : put it in a config file)
+    un = username
+    cs = host
+    pw = password
 
     connection = oracledb.connect(user=un, password=pw, dsn=cs)
     cursor = connection.cursor()
@@ -88,6 +100,12 @@ def get_execution_plan(query):
         json_plan['execution_plan'].append(dict(zip([d[0] for d in cursor.description], row)))
 
     return json.dumps(json_plan)
+
+
+
+@app.route('/test1', methods=['GET'])
+def test():
+    return "anas"
 
 
 if __name__ == '__main__':
