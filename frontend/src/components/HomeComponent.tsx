@@ -1,13 +1,13 @@
-
 "use client";
 import { useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import CodeEditor from '@uiw/react-textarea-code-editor';
 import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import ReactMarkdown from 'react-markdown';
 import { Button } from "@/components/ui/button";
-import { JSX, SVGProps } from "react";
 import { QueryResultTable } from "@/components/QueryResultTable";
 import { Data } from "@/types";
 import { useRouter } from 'next/navigation';
@@ -24,7 +24,7 @@ export default function HomeComponent() {
         const password = localStorage.getItem("password");
 
         if (!username || !host || !password) {
-           router.push("/landing")
+            router.push("/landing")
         }
     }, []); 
     const backendUrl = "http://localhost:5000";
@@ -88,12 +88,18 @@ export default function HomeComponent() {
                 <CardContent className="flex gap-4 pt-4">
                     <div className="grid gap-1.5 w-full">
                         <Label htmlFor="sql">SQL Query</Label>
-                        <Textarea id="sql" placeholder="Enter your SQL query here." value={sqlQuery}
-                                  onChange={(e) => setSqlQuery(e.target.value)}/>
+                        <CodeEditor id="sql" language="sql" padding={30}  placeholder="Enter your SQL query here." value={sqlQuery}
+                        onChange={(e:any) => setSqlQuery(e.target.value)}/>
+                    
+                    
                     </div>
                     <div className="grid gap-1.5 w-full">
                         <Label htmlFor="optimized">Optimized</Label>
-                        <Textarea id="optimized" placeholder="Optimized SQL query" readOnly/>
+
+                        <ReactMarkdown>
+                             
+                        </ReactMarkdown>
+                        
                     </div>
                 </CardContent>
                 <CardFooter className="flex gap-4">
