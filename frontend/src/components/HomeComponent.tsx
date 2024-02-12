@@ -55,7 +55,12 @@ export default function HomeComponent() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({query: sqlQuery})
+                body: JSON.stringify({
+                    query: sqlQuery,
+                    username:localStorage.getItem("username"),
+                    host:localStorage.getItem("host"),
+                    password:localStorage.getItem("password")
+                })
             });
 
             const data = await response.json();

@@ -11,19 +11,20 @@ import { Button } from "@/components/ui/button"
 import { useState } from 'react';
 
 export function DbConnection() {
-  // State variables to store input values
   const [username, setUsername] = useState('');
   const [host, setHost] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  // Function to handle form submission
   const handleSubmit = async (e:any) => {
     e.preventDefault();
 
     try {
-      // Send a POST request to the backend route
-      const response = await fetch('/connect_db', {
+      localStorage.setItem('username',username);
+      localStorage.setItem('host',host);
+      localStorage.setItem('password',password);
+      const response = await fetch('http://localhost:5000/connect_db', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -35,13 +36,13 @@ export function DbConnection() {
         throw new Error('Failed to connect to database');
       }
 
-      // Clear error message if successful
       setErrorMessage('');
-      // Redirect to another page or handle success
-      // For example, you can use window.location.href = '/success';
+      setSuccessMessage('Connected to database successfully');
+      // Rediriger vers une autre page après connexion réussie
+      window.location.href = '/'; // Modifier '#' par l'URL souhaitée
     } catch (error:any) {
-      // Set error message if request fails
       setErrorMessage(error.message);
+      setSuccessMessage('');
     }
   };
 
@@ -85,6 +86,7 @@ export function DbConnection() {
             />
           </div>
           {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+          {successMessage && <p className="text-green-500">{successMessage}</p>}
         </CardContent>
         <CardFooter className="flex justify-end">
           <Button className="bg-red-500 hover:bg-red-600 text-white" type="submit">

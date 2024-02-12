@@ -46,8 +46,12 @@ def execution_plan():  # put application's code here
 def execute_query_route():
     body = request.json
     query = body['query']
+    username= body['username']
+    host = body['host']
+    password= body['password']
+
     try:
-        result = execute_query(query)
+        result = execute_query(query,username,host,password)
         return {'result': json.loads(result)['result']}
     except Exception as e:
         return {'error': str(e)}
@@ -66,8 +70,8 @@ def connect_to_db():
         return jsonify({'error': str(e)}), 500
 
 
-def execute_query(query):
-    cursor = connect_db()
+def execute_query(query,username,host,password):
+    cursor = connect_db(username,host,password)
     cursor.execute(query)
     result = cursor.fetchall()
     # Process the plan into JSON format
