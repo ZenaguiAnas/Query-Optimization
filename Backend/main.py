@@ -38,8 +38,11 @@ def validate_query():
 def execution_plan():  # put application's code here
     body = request.json
     query = body['query']
+    username = body['username']
+    host = body['host']
+    password = body['password']
 
-    return {'execution_plan': get_execution_plan(query)}
+    return {'execution_plan': get_execution_plan(query, username, host, password)}
 
 
 @app.route('/ExecuteQuery', methods=['POST'])
@@ -64,7 +67,7 @@ def connect_to_db():
     password = body['password']
     try:
 
-        cursor = connect_db(username, host, password)
+        connect_db(username, host, password)
         return jsonify({'message': 'Connected to database successfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -93,8 +96,8 @@ def connect_db(username, host, password):
     return cursor
 
 
-def get_execution_plan(query):
-    cursor = connect_db()
+def get_execution_plan(query, username, host, password):
+    cursor = connect_db(username, host, password)
     cursor.execute(f"EXPLAIN PLAN FOR {query}")
     cursor.execute(f"select * from table(dbms_xplan.display(null, null, 'SERIAL'))")
     plan = cursor.fetchall()
