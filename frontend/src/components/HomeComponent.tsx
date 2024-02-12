@@ -14,7 +14,7 @@ import {Data} from "@/types";
 export default function HomeComponent() {
     const [sqlQuery, setSqlQuery] = useState("");
     // const [optimizedQuery, setOptimizedQuery] = useState("");
-    // const [validationResult, setValidationResult] = useState("");
+    const [isValidQuery, setValidationResult] = useState(false);
     const [queryResult, setQueryResult] = useState<Data | null>(null);
 
     // todo: replace with the actual backend URL
@@ -31,14 +31,14 @@ export default function HomeComponent() {
             });
 
             const data = await response.json();
-            // setValidationResult(data);
-            console.log(data);
 
-            if (data.result == "Valid SQL Query") {
+            if (data.success === true) {
                 console.log(data.result);
+                setValidationResult(true);
                 // Afficher le message "Valid SQL Query" en cas de succès
                 toast.success("Valid SQL Query");
             } else {
+                setValidationResult(false);
                 // Afficher le message d'erreur retourné par le backend en cas d'erreur
                 toast.error(data.error);
             }
@@ -105,7 +105,7 @@ export default function HomeComponent() {
                 <CardFooter className="flex gap-4">
                     <Button disabled={!sqlQuery} className="bg-green-500" onClick={validateQuery}>Validate
                         Syntax</Button>
-                    <Button disabled={!sqlQuery} className="bg-blue-500" onClick={executeQuery}>Execute
+                    <Button disabled={!isValidQuery} className="bg-blue-500" onClick={executeQuery}>Execute
                         Query </Button>
                 </CardFooter>
             </Card>
