@@ -107,7 +107,7 @@ export default function HomeComponent() {
                     </div>
                     <div className="grid gap-1.5 w-full">
                         <Label htmlFor="optimized">Optimized</Label>
-                        <Textarea id="optimized" placeholder="Optimized SQL query" readOnly value={streamData}/>{" "}
+                        <Textarea id="optimized" placeholder="Optimized SQL query" readOnly/>
                     </div>
                 </CardContent>
                 <CardFooter className="flex gap-4">
