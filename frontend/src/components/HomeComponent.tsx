@@ -1,21 +1,21 @@
 "use client";
-import { useEffect, useState } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
+import {useEffect, useState} from 'react';
+import {ToastContainer, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import CodeEditor from '@uiw/react-textarea-code-editor';
-import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import ReactMarkdown from 'react-markdown';
-import { Button } from "@/components/ui/button";
-import { QueryResultTable } from "@/components/QueryResultTable";
-import { Data } from "@/types";
-import { useRouter } from 'next/navigation';
+import {CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card} from "@/components/ui/card";
+import {Label} from "@/components/ui/label";
+import {Textarea} from "@/components/ui/textarea";
+import {Button} from "@/components/ui/button";
+import {JSX, SVGProps} from "react";
+import {QueryResultTable} from "@/components/QueryResultTable";
+import {Data} from "@/types";
+import {useRouter} from 'next/navigation';
 
 export default function HomeComponent() {
     const [sqlQuery, setSqlQuery] = useState("");
     const [isValidQuery, setValidationResult] = useState(false);
     const [queryResult, setQueryResult] = useState<Data | null>(null);
+    const [streamData, setStreamData] = useState([] as string[]);
     const router = useRouter();
 
     useEffect(() => {
@@ -26,8 +26,22 @@ export default function HomeComponent() {
         if (!username || !host || !password) {
             router.push("/landing")
         }
-    }, []); 
+    }, []);
     const backendUrl = "http://localhost:5000";
+
+
+    useEffect(() => {
+        const eventSource = new EventSource(backendUrl + "/stream-optimization");
+        eventSource.onmessage = (event: MessageEvent<string>) => {
+            console.log(event)
+            setStreamData(prevData => [...prevData, event.data]);
+        };
+
+        return () => {
+            eventSource.close();
+        };
+    }, []);
+
 
     const validateQuery = async () => {
         toast.promise(fetch(backendUrl + '/ValidateSQL', {
@@ -35,7 +49,7 @@ export default function HomeComponent() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ query: sqlQuery })
+            body: JSON.stringify({query: sqlQuery})
         }).then(response => response.json()), {
             success: "Valid SQL Query",
             error: "Invalid SQL Query",
@@ -88,18 +102,12 @@ export default function HomeComponent() {
                 <CardContent className="flex gap-4 pt-4">
                     <div className="grid gap-1.5 w-full">
                         <Label htmlFor="sql">SQL Query</Label>
-                        <CodeEditor id="sql" language="sql" padding={30}  placeholder="Enter your SQL query here." value={sqlQuery}
-                        onChange={(e:any) => setSqlQuery(e.target.value)}/>
-                    
-                    
+                        <Textarea id="sql" placeholder="Enter your SQL query here." value={sqlQuery}
+                                  onChange={(e) => setSqlQuery(e.target.value)}/>
                     </div>
                     <div className="grid gap-1.5 w-full">
                         <Label htmlFor="optimized">Optimized</Label>
-
-                        <ReactMarkdown>
-                             
-                        </ReactMarkdown>
-                        
+                        <Textarea id="optimized" placeholder="Optimized SQL query" value={streamData} readOnly/>
                     </div>
                 </CardContent>
                 <CardFooter className="flex gap-4">
