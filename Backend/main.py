@@ -20,7 +20,7 @@ def validate_query():
         parse(query)
 
         # Si la syntaxe de la requête est valide, retourner un objet JSON avec le résultat
-        return jsonify({'result': 'Valid SQL Query'})
+        return jsonify({'success': True, 'message': 'your sql is valid'}), 200
     except ParseError as e:
         # Si une erreur de syntaxe est détectée, retourner un objet JSON avec le message d'erreur
         error_description = e.errors[0]['description']
@@ -46,32 +46,33 @@ def execution_plan():  # put application's code here
 def execute_query_route():
     body = request.json
     query = body['query']
-    username= body['username']
+    username = body['username']
     host = body['host']
-    password= body['password']
+    password = body['password']
 
     try:
-        result = execute_query(query,username,host,password)
+        result = execute_query(query, username, host, password)
         return {'result': json.loads(result)['result']}
     except Exception as e:
         return {'error': str(e)}
-    
+
+
 @app.route('/connect_db', methods=['POST'])
 def connect_to_db():
     body = request.json
-    username= body['username']
+    username = body['username']
     host = body['host']
-    password= body['password']
+    password = body['password']
     try:
 
-       cursor = connect_db(username, host, password)
-       return jsonify({'message': 'Connected to database successfully'}), 200
+        cursor = connect_db(username, host, password)
+        return jsonify({'message': 'Connected to database successfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
-def execute_query(query,username,host,password):
-    cursor = connect_db(username,host,password)
+def execute_query(query, username, host, password):
+    cursor = connect_db(username, host, password)
     cursor.execute(query)
     result = cursor.fetchall()
     # Process the plan into JSON format
@@ -104,7 +105,6 @@ def get_execution_plan(query):
         json_plan['execution_plan'].append(dict(zip([d[0] for d in cursor.description], row)))
 
     return json.dumps(json_plan)
-
 
 
 @app.route('/test1', methods=['GET'])
