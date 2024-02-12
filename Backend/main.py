@@ -51,8 +51,7 @@ def execute_query_route():
     password = body['password']
 
     try:
-        result = execute_query(query, username, host, password)
-        return {'result': json.loads(result)['result']}
+        return execute_query(query, username, host, password)
     except Exception as e:
         return {'error': str(e)}
 
@@ -80,7 +79,7 @@ def execute_query(query, username, host, password):
     for row in result:
         json_result['result'].append(dict(zip([d[0] for d in cursor.description], row)))
 
-    return json.dumps(json_result)
+    return json_result
 
 
 def connect_db(username, host, password):

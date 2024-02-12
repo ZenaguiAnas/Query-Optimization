@@ -22,7 +22,7 @@ export function Landing() {
     <div>
       {/* Red Database Logo */}
       <div className="absolute top-0 left-0 p-4 flex items-center">
-  <Image src={"/database-5-512.png"} width={512} height={512} className="w-12 h-12 text-red-600"  />
+  <Image src={"/database-5-512.png"} width={512} height={512} className="w-12 h-12 text-red-600"  alt={"databse icon"} />
   <span className="ml-2 text-black text-xl font-bold">BetterSQL</span>
 </div>
       <section

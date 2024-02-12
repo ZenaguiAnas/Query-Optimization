@@ -21,61 +21,52 @@ export default function HomeComponent() {
     const backendUrl = "http://localhost:5000";
 
     const validateQuery = async () => {
-        try {
-            const response = await fetch(backendUrl + '/ValidateSQL', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({query: sqlQuery})
-            });
 
-            const data = await response.json();
-
+        toast.promise(fetch(backendUrl + '/ValidateSQL', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({query: sqlQuery})
+        }).then(response => response.json()), {
+            success: "Valid SQL Query",
+            error: "Invalid SQL Query",
+            pending: "Validating SQL Query..."
+        }).then(data => {
             if (data.success === true) {
                 console.log(data.result);
                 setValidationResult(true);
-                // Afficher le message "Valid SQL Query" en cas de succès
-                toast.success("Valid SQL Query");
             } else {
                 setValidationResult(false);
-                // Afficher le message d'erreur retourné par le backend en cas d'erreur
-                toast.error(data.error);
             }
-        } catch (error) {
+        });
 
-        }
     };
 
 
     async function executeQuery() {
-        try {
-            const response = await fetch(backendUrl + '/ExecuteQuery', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    query: sqlQuery,
-                    username:localStorage.getItem("username"),
-                    host:localStorage.getItem("host"),
-                    password:localStorage.getItem("password")
-                })
-            });
 
-            const data = await response.json();
-
+        toast.promise(fetch(backendUrl + '/ExecuteQuery', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: sqlQuery,
+                username: localStorage.getItem("username"),
+                host: localStorage.getItem("host"),
+                password: localStorage.getItem("password")
+            })
+        }).then(response => response.json()), {
+            success: "Query executed successfully!",
+            error: "Error executing query",
+            pending: "Executing query..."
+        }).then(data => {
             if (data.result) {
                 setQueryResult(data);
-                // Afficher le message "Valid SQL Query" en cas de succès
-                toast.success("Query executed successfully!");
-            } else {
-                // Afficher le message d'erreur retourné par le backend en cas d'erreur
-                toast.error("Error executing query");
             }
-        } catch (error) {
+        });
 
-        }
     }
 
 
