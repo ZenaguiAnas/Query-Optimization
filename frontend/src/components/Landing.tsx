@@ -47,9 +47,9 @@ export function Landing() {
           </div>
           <div className="flex flex-col gap-2 min-[400px]:flex-row">
           <Link
-  href="/connect" // Spécifiez le chemin de la page Connect
-  className="inline-flex h-16 items-center justify-center rounded-md bg-red-600 px-8 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-red-700 hover:text-gray-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-red-400 dark:text-gray-50 dark:hover:bg-red-500 dark:focus-visible:ring-gray-300"
->
+  href="/connect" 
+  className="inline-flex h-16 items-center justify-center rounded-md bg-red-600 px-8 text-xl font-medium text-gray-50 shadow transition-colors hover:bg-red-700 hover:text-gray-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-red-400 dark:text-gray-50 dark:hover:bg-red-500 dark:focus-visible:ring-gray-300"
+  style={{ fontWeight: 'bold' }}>
   Connect Your Database
 </Link>
           </div>

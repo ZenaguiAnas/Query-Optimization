@@ -1,33 +1,41 @@
-"use client";
-import {useState} from 'react';
-import {ToastContainer, toast} from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import {CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card} from "@/components/ui/card"
-import {Label} from "@/components/ui/label"
-import {Textarea} from "@/components/ui/textarea"
-import {Button} from "@/components/ui/button"
-import {JSX, SVGProps} from "react"
-import {QueryResultTable} from "@/components/QueryResultTable";
-import {Data} from "@/types";
 
+"use client";
+import { useEffect, useState } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { JSX, SVGProps } from "react";
+import { QueryResultTable } from "@/components/QueryResultTable";
+import { Data } from "@/types";
+import { useRouter } from 'next/navigation';
 
 export default function HomeComponent() {
     const [sqlQuery, setSqlQuery] = useState("");
-    // const [optimizedQuery, setOptimizedQuery] = useState("");
     const [isValidQuery, setValidationResult] = useState(false);
     const [queryResult, setQueryResult] = useState<Data | null>(null);
+    const router = useRouter();
 
-    // todo: replace with the actual backend URL
+    useEffect(() => {
+        const username = localStorage.getItem("username");
+        const host = localStorage.getItem("host");
+        const password = localStorage.getItem("password");
+
+        if (!username || !host || !password) {
+           router.push("/landing")
+        }
+    }, []); 
     const backendUrl = "http://localhost:5000";
 
     const validateQuery = async () => {
-
         toast.promise(fetch(backendUrl + '/ValidateSQL', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({query: sqlQuery})
+            body: JSON.stringify({ query: sqlQuery })
         }).then(response => response.json()), {
             success: "Valid SQL Query",
             error: "Invalid SQL Query",
@@ -40,12 +48,9 @@ export default function HomeComponent() {
                 setValidationResult(false);
             }
         });
-
     };
 
-
     async function executeQuery() {
-
         toast.promise(fetch(backendUrl + '/ExecuteQuery', {
             method: 'POST',
             headers: {
@@ -66,14 +71,12 @@ export default function HomeComponent() {
                 setQueryResult(data);
             }
         });
-
     }
 
-
-    return (<div className={"w-screen mx-10 flex flex-col gap-2"}>
+    return (
+        <div className={"w-screen mx-10 flex flex-col gap-2"}>
             <Card className="bg-white">
                 <CardHeader className="flex items-center justify-center">
-
                     <DatabaseIcon className="w-6 h-6 mr-2 text-red-500"/>
                     <div>
                         <ToastContainer/>
