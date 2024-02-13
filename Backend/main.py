@@ -5,9 +5,43 @@ from sqlglot import parse
 from sqlglot.errors import ParseError
 from flask_cors import CORS
 import oracledb
+# from src.optimizer import optimize_query
+
+from transformers import AutoPeftModelForCausalLM, AutoTokenizer
+from transformers import pipeline
 
 app = Flask(__name__)
 CORS(app)
+
+
+base_model = "anas72/query_optimization_models"
+model = AutoPeftModelForCausalLM.from_pretrained(base_model, load_in_4bit=True)
+tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
+tokenizer.pad_token = tokenizer.eos_token
+tokenizer.padding_side = "right"
+pipe = pipeline(task="text-generation", model=model, tokenizer=tokenizer, max_length=300)
+
+
+def optimize_query(query):
+    prompt = "You are a chatbot specializing in optimizing SQL queries within the Oracle syntax ecosystem. Your primary functionality is to provide optimized query. "
+    result = pipe(f"<s>[INST] {prompt+query} [/INST]")
+    chatbot_response = result[0]['generated_text']
+
+    print(chatbot_response)
+
+    return chatbot_response
+
+
+@app.route('/api/optimize', methods=['POST'])
+def optimize():
+    data = request.get_json()
+    input_query = data.get('input_query')
+
+    if input_query:
+        optimized_query = optimize_query(input_query)
+        return jsonify({'optimized_query': optimized_query})
+
+    return jsonify({'error': 'Input query not provided'}), 400
 
 
 @app.route('/ValidateSQL', methods=['POST'])

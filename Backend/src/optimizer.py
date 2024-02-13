@@ -1,6 +1,6 @@
 # %%
-%%capture
-%pip install accelerate peft bitsandbytes transformers trl
+# %%capture
+# %pip install accelerate peft bitsandbytes transformers trl
 
 # %%
 import os
