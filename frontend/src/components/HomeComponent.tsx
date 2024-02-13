@@ -12,6 +12,7 @@ import {useRouter} from 'next/navigation';
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-sql";
 import "ace-builds/src-noconflict/theme-sqlserver"; // Thème clair
+const [modalIsOpen, setModalIsOpen] = useState(false);
 export default function HomeComponent() {
     const [sqlQuery, setSqlQuery] = useState("");
     const [isValidQuery, setValidationResult] = useState(false);
@@ -114,19 +115,22 @@ export default function HomeComponent() {
     const showExecutionPlan = async () => {
         const executionPlan = await fetchExecutionPlan();
         if (executionPlan) {
-
             toast(<QueryResultTable result={executionPlan}/>, {
-                position: "bottom-center",
+                // Affiche le plan au centre de l'écran
+                position: "top-center",
                 style: {
-                    width: "75vw", // Largeur maximale de la pop-up
-                    // textAlign: "center", // Alignement du texte au centre
-                    margin: "auto 0" // Centrer la pop-up
+                    width: "50vw", // Largeur maximale de la pop-up
+                    textAlign: "center", // Alignement du texte au centre
+                    bottom: "50%", // Centre verticalement
+                    left: "-50%", // Centre horizontalement
+                    // transform: "translate(-50%, -50%)" // Décalage pour centrer
                 }
             });
         } else {
             toast.error("Error fetching execution plan");
         }
     };
+    
 
     async function executeQuery() {
         toast.promise(fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/ExecuteQuery', {
