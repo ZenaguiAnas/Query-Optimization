@@ -1,15 +1,13 @@
 "use client";
-import {useEffect, useState} from 'react';
-import {ToastContainer, toast} from 'react-toastify';
+import {JSX, SVGProps, useEffect, useState} from 'react';
+import {toast, ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ReactMarkdown from 'react-markdown';
-import {CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card} from "@/components/ui/card";
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Label} from "@/components/ui/label";
-import {Textarea} from "@/components/ui/textarea";
 import {Button} from "@/components/ui/button";
-import {JSX, SVGProps} from "react";
 import {QueryResultTable} from "@/components/QueryResultTable";
-import {Data} from "@/types";
+import {Data, ExecutionStep} from "@/types";
 import {useRouter} from 'next/navigation';
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-sql";
@@ -34,7 +32,7 @@ export default function HomeComponent() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(process.env.PUBLIC_NEXT_BACKEND_URL + '/stream-optimization');
+                const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/stream-optimization');
                 if (!response?.ok || response?.status !== 200 || !response?.body) {
                     toast.error("Error fetching data")
                     return
@@ -70,7 +68,7 @@ export default function HomeComponent() {
 
 
     const validateQuery = async () => {
-        toast.promise(fetch(process.env.PUBLIC_NEXT_BACKEND_URL + '/ValidateSQL', {
+        toast.promise(fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/ValidateSQL', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -92,7 +90,7 @@ export default function HomeComponent() {
     // Fonction pour obtenir le plan d'exécution
     const fetchExecutionPlan = async () => {
         try {
-            const response = await fetch(process.env.PUBLIC_NEXT_BACKEND_URL + '/ExecutionPlan', {
+            const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/ExecutionPlan', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -105,8 +103,7 @@ export default function HomeComponent() {
                 })
             });
             const data = await response.json();
-            const executionPlan = JSON.parse(data.execution_plan);
-            return executionPlan;
+            return data.result;
         } catch (error) {
             console.error('Error fetching execution plan:', error);
             return null;
@@ -117,13 +114,13 @@ export default function HomeComponent() {
     const showExecutionPlan = async () => {
         const executionPlan = await fetchExecutionPlan();
         if (executionPlan) {
-            console.log(executionPlan);
-            toast(JSON.stringify(executionPlan), {
+
+            toast(<QueryResultTable result={executionPlan}/>, {
                 position: "bottom-center",
                 style: {
-                    width: "100%", // Largeur de la pop-up
-                    maxWidth: "800px", // Largeur maximale de la pop-up
-                    textAlign: "center" // Alignement du texte au centre
+                    width: "75vw", // Largeur maximale de la pop-up
+                    // textAlign: "center", // Alignement du texte au centre
+                    margin: "auto 0" // Centrer la pop-up
                 }
             });
         } else {
@@ -132,7 +129,7 @@ export default function HomeComponent() {
     };
 
     async function executeQuery() {
-        toast.promise(fetch(process.env.PUBLIC_NEXT_BACKEND_URL + '/ExecuteQuery', {
+        toast.promise(fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/ExecuteQuery', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -206,7 +203,6 @@ export default function HomeComponent() {
                         <Label htmlFor="optimized">Optimized</Label>
                         <ReactMarkdown>
                             {streamData}
-                            {/* This is a paragraph of text. You can **bold** text, *italicize* text, or create [links](https://www.example.com). */}
                         </ReactMarkdown>
                         {/* todo: add optimized query here */}
                     </div>
@@ -253,3 +249,5 @@ function DatabaseIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) 
         </svg>
     )
 }
+
+
