@@ -18,7 +18,7 @@ export default function HomeComponent() {
     const [sqlQuery, setSqlQuery] = useState("");
     const [isValidQuery, setValidationResult] = useState(false);
     const [queryResult, setQueryResult] = useState<Data | null>(null);
-    const [streamData, setStreamData] = useState([] as string[]);
+    const [streamData, setStreamData] = useState('### Optimized Query\n\n');
     const router = useRouter();
 
     useEffect(() => {
@@ -30,20 +30,34 @@ export default function HomeComponent() {
             router.push("/landing")
         }
     }, []);
-    const backendUrl = "http://localhost:5000";
-
 
     useEffect(() => {
-        const eventSource = new EventSource(backendUrl + "/stream-optimization");
-        eventSource.onmessage = (event: MessageEvent<string>) => {
-            console.log(event)
-            setStreamData(prevData => [...prevData, event.data]);
+        const fetchData = async () => {
+            try {
+                const response = await fetch(process.env.PUBLIC_NEXT_BACKEND_URL + '/stream-optimization');
+                if (!response?.ok || response?.status !== 200 || !response?.body) {
+                    toast.error("Error fetching data")
+                    return
+                }
+                const reader = response.body.getReader();
+
+                while (true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+                    setStreamData(prevText => prevText + new TextDecoder().decode(value));
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
         };
 
+        fetchData();
+
         return () => {
-            eventSource.close();
+            // Cleanup
         };
     }, []);
+
     const handleChangeDatabase = () => {
         // Supprimer les informations de localStorage
         localStorage.removeItem("username");
@@ -52,11 +66,11 @@ export default function HomeComponent() {
 
         // Naviguer vers la page de connexion
         router.push("/connect");
-    };  
+    };
 
 
     const validateQuery = async () => {
-        toast.promise(fetch(backendUrl + '/ValidateSQL', {
+        toast.promise(fetch(process.env.PUBLIC_NEXT_BACKEND_URL + '/ValidateSQL', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -75,50 +89,50 @@ export default function HomeComponent() {
             }
         });
     };
-        // Fonction pour obtenir le plan d'exécution
-        const fetchExecutionPlan = async () => {
-            try {
-                const response = await fetch(backendUrl + '/ExecutionPlan', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        query: sqlQuery,
-                        username: localStorage.getItem("username"),
-                        host: localStorage.getItem("host"),
-                        password: localStorage.getItem("password")
-                    })
-                });
-                const data = await response.json();
-                const executionPlan = JSON.parse(data.execution_plan);
-                return executionPlan;
-            } catch (error) {
-                console.error('Error fetching execution plan:', error);
-                return null;
-            }
-        };
-    
-        // Fonction pour afficher le plan d'exécution dans une pop-up
-        const showExecutionPlan = async () => {
-            const executionPlan = await fetchExecutionPlan();
-            if (executionPlan) {
-                console.log(executionPlan);
-                toast(JSON.stringify(executionPlan), {
-                    position: "bottom-center",
-                    style: {
-                        width: "100%", // Largeur de la pop-up  
-                        maxWidth: "800px", // Largeur maximale de la pop-up
-                        textAlign: "center" // Alignement du texte au centre
-                    }
-                });
-            } else {
-                toast.error("Error fetching execution plan");
-            }
-        };
+    // Fonction pour obtenir le plan d'exécution
+    const fetchExecutionPlan = async () => {
+        try {
+            const response = await fetch(process.env.PUBLIC_NEXT_BACKEND_URL + '/ExecutionPlan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    query: sqlQuery,
+                    username: localStorage.getItem("username"),
+                    host: localStorage.getItem("host"),
+                    password: localStorage.getItem("password")
+                })
+            });
+            const data = await response.json();
+            const executionPlan = JSON.parse(data.execution_plan);
+            return executionPlan;
+        } catch (error) {
+            console.error('Error fetching execution plan:', error);
+            return null;
+        }
+    };
+
+    // Fonction pour afficher le plan d'exécution dans une pop-up
+    const showExecutionPlan = async () => {
+        const executionPlan = await fetchExecutionPlan();
+        if (executionPlan) {
+            console.log(executionPlan);
+            toast(JSON.stringify(executionPlan), {
+                position: "bottom-center",
+                style: {
+                    width: "100%", // Largeur de la pop-up
+                    maxWidth: "800px", // Largeur maximale de la pop-up
+                    textAlign: "center" // Alignement du texte au centre
+                }
+            });
+        } else {
+            toast.error("Error fetching execution plan");
+        }
+    };
 
     async function executeQuery() {
-        toast.promise(fetch(backendUrl + '/ExecuteQuery', {
+        toast.promise(fetch(process.env.PUBLIC_NEXT_BACKEND_URL + '/ExecuteQuery', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -141,17 +155,17 @@ export default function HomeComponent() {
     }
 
     return (
-        
+
         <div className={"w-screen mx-10 flex flex-col gap-2"}>
-            
+
             <div className='flex justify-between items-center'>
-    <div className="flex items-center">
-        <DatabaseIcon className="w-10 h-10 mr-2 text-red-500"/>
-        <span className="text-lg font-bold">BetterSQL</span>
-    </div>
-    <Button className="bg-red-500" onClick={handleChangeDatabase}>Change Database</Button>
-</div>
-            
+                <div className="flex items-center">
+                    <DatabaseIcon className="w-10 h-10 mr-2 text-red-500"/>
+                    <span className="text-lg font-bold">BetterSQL</span>
+                </div>
+                <Button className="bg-red-500" onClick={handleChangeDatabase}>Change Database</Button>
+            </div>
+
             <Card className="bg-white">
                 <CardHeader className="flex items-center justify-center">
                     {/* <DatabaseIcon className="w-10 h-10 mr-2 text-red-500"/> */}
@@ -166,36 +180,35 @@ export default function HomeComponent() {
                     <div className="grid gap-1.5 w-full">
                         <Label htmlFor="sql">SQL Query</Label>
                         <AceEditor
-                                    mode="sql"
-                                    theme="sqlserver"
-                                    value={sqlQuery}
-                                    onChange={(value) => setSqlQuery(value)}
-                                    name="sql-editor"
-                                    placeholder="Enter your SQL query here."
-                                    width="100%"
-                                    height="200px"
-                                    fontSize={16}
-                                    showPrintMargin={true}
-                                    showGutter={true}
-                                    highlightActiveLine={false}
-                                    setOptions={{
-                                        enableBasicAutocompletion: false,
-                                        enableLiveAutocompletion: false,
-                                        enableSnippets: false,
-                                        showLineNumbers: true,
-                                        tabSize: 2,
-                                    }}
-                                    />
+                            mode="sql"
+                            theme="sqlserver"
+                            value={sqlQuery}
+                            onChange={(value) => setSqlQuery(value)}
+                            name="sql-editor"
+                            placeholder="Enter your SQL query here."
+                            width="100%"
+                            height="200px"
+                            fontSize={16}
+                            showPrintMargin={true}
+                            showGutter={true}
+                            highlightActiveLine={false}
+                            setOptions={{
+                                enableBasicAutocompletion: false,
+                                enableLiveAutocompletion: false,
+                                enableSnippets: false,
+                                showLineNumbers: true,
+                                tabSize: 2,
+                            }}
+                        />
                     </div>
-                    
+
                     <div className="grid gap-1.5 w-full">
                         <Label htmlFor="optimized">Optimized</Label>
-                        
                         <ReactMarkdown>
-                        {streamData.join("\n")}
+                            {streamData}
                             {/* This is a paragraph of text. You can **bold** text, *italicize* text, or create [links](https://www.example.com). */}
-                     </ReactMarkdown> 
-                {/* todo: add optimized query here */}
+                        </ReactMarkdown>
+                        {/* todo: add optimized query here */}
                     </div>
                 </CardContent>
                 <CardFooter className="flex gap-4">
@@ -203,9 +216,9 @@ export default function HomeComponent() {
                         Syntax</Button>
                     <Button disabled={!isValidQuery} className="bg-blue-500" onClick={executeQuery}>Execute
                         Query </Button>
-                        <Button disabled={!isValidQuery} className="bg-orange-500" onClick={showExecutionPlan} >
+                    <Button disabled={!isValidQuery} className="bg-orange-500" onClick={showExecutionPlan}>
                         Execution Plan
-                        </Button>
+                    </Button>
                 </CardFooter>
             </Card>
             <Card className="bg-white">
