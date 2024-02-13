@@ -3,7 +3,6 @@ from sqlglot import parse
 from sqlglot.errors import ParseError
 from flask_cors import CORS
 import oracledb
-import json
 
 app = Flask(__name__)
 CORS(app)
@@ -107,27 +106,9 @@ def connect_db(username, host, password):
 def get_execution_plan(query, username, host, password):
     cursor = connect_db(username, host, password)
     cursor.execute(f"EXPLAIN PLAN FOR {query}")
-    cursor.execute(f"select * from table(dbms_xplan.display(null, null, 'SERIAL'))")
-    plan = cursor.fetchall()
-    # Format execution plan
-    formatted_execution_plan = []
-    for row in plan[5:]:
-        if '-' in row[0]:
-            # If the row contains only dashes, append it as a single entry
-            continue
-        else:
-            row_values = [value.strip() for value in row[0].split("|")]
-
-            formatted_execution_plan.append({
-                'Id': row_values[1],
-                'Operation': row_values[2],
-                'Name': row_values[3],
-                'Rows': row_values[4],
-                'Bytes': row_values[5],
-                'Cost': row_values[6],
-                'Time': row_values[7]
-            })
-    return formatted_execution_plan
+    # Fetch the execution plan
+    cursor.execute("SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY)")
+    return cursor.fetchall()
 
 
 if __name__ == '__main__':

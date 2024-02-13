@@ -7,16 +7,26 @@ import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} f
 import {Label} from "@/components/ui/label";
 import {Button} from "@/components/ui/button";
 import {QueryResultTable} from "@/components/QueryResultTable";
-import {Data, ExecutionStep} from "@/types";
+import {Data} from "@/types";
 import {useRouter} from 'next/navigation';
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-sql";
-import "ace-builds/src-noconflict/theme-sqlserver"; // Thème clair
+import "ace-builds/src-noconflict/theme-sqlserver";
+import {
+    Dialog, DialogClose,
+    DialogContent,
+    DialogDescription, DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/dialog";
+
 export default function HomeComponent() {
     const [sqlQuery, setSqlQuery] = useState("");
     const [isValidQuery, setValidationResult] = useState(false);
     const [queryResult, setQueryResult] = useState<Data | null>(null);
     const [streamData, setStreamData] = useState('### Optimized Query\n\n');
+    const [executionPlan, setExecutionPlan] = useState("");
     const router = useRouter();
 
     useEffect(() => {
@@ -115,7 +125,9 @@ export default function HomeComponent() {
         const executionPlan = await fetchExecutionPlan();
         if (executionPlan) {
 
-            toast(<QueryResultTable result={executionPlan}/>, {
+            setExecutionPlan(executionPlan)
+        } else {
+            toast.error("Error fetching execution plan", {
                 position: "bottom-center",
                 style: {
                     width: "75vw", // Largeur maximale de la pop-up
@@ -123,8 +135,6 @@ export default function HomeComponent() {
                     margin: "auto 0" // Centrer la pop-up
                 }
             });
-        } else {
-            toast.error("Error fetching execution plan");
         }
     };
 
@@ -154,7 +164,6 @@ export default function HomeComponent() {
     return (
 
         <div className={"w-screen mx-10 flex flex-col gap-2"}>
-
             <div className='flex justify-between items-center'>
                 <div className="flex items-center">
                     <DatabaseIcon className="w-10 h-10 mr-2 text-red-500"/>
@@ -212,9 +221,26 @@ export default function HomeComponent() {
                         Syntax</Button>
                     <Button disabled={!isValidQuery} className="bg-blue-500" onClick={executeQuery}>Execute
                         Query </Button>
-                    <Button disabled={!isValidQuery} className="bg-orange-500" onClick={showExecutionPlan}>
-                        Execution Plan
-                    </Button>
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button disabled={!isValidQuery} className="bg-orange-500" onClick={showExecutionPlan}>
+                                    Execution Plan
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent style={{width:"hana mochkil wa9ila "}}>
+                                <DialogHeader>
+                                    <DialogTitle>Your Execution Plan</DialogTitle>
+                                    <DialogDescription>
+                                        {executionPlan}
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <DialogClose>
+                                    <Button type="submit">Close</Button>
+                                </DialogClose>
+                            </DialogContent>
+                        </Dialog>
+
+
                 </CardFooter>
             </Card>
             <Card className="bg-white">
