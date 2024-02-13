@@ -35,7 +35,7 @@ def validate_query():
             'error': f"Invalid SQL Query: {error_description}. Error at line {line_number}, column {column_number}. Context: {context} {highlight} {end_context}"})
 
 
-@app.route('/ExecutionPlan')
+@app.route('/ExecutionPlan', methods=['POST'])
 def execution_plan():  # put application's code here
     body = request.json
     query = body['query']
