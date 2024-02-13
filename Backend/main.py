@@ -1,6 +1,7 @@
 import json
+import time
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from sqlglot import parse
 from sqlglot.errors import ParseError
 from flask_cors import CORS
@@ -73,6 +74,20 @@ def connect_to_db():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/stream-optimization')
+def generate_large_csv():
+    def generate():
+        for i in range(1):
+            yield f""""data: # | Column 1 Header | Column 2 Header | Column 3 Header |
+|-----------------|-----------------|-----------------|
+| Row 1, Column 1 | Row 1, Column 2 | Row 1, Column 3 |
+| Row 2, Column 1 | Row 2, Column 2 | Row 2, Column 3 |
+| Row 3, Column 1 | Row 3, Column 2 | Row 3, Column 3 |
+ \n\n"""
+
+    return generate(), {"Content-Type": "text/event-stream"}
+
+
 def execute_query(query, username, host, password):
     cursor = connect_db(username, host, password)
     cursor.execute(query)
@@ -107,11 +122,6 @@ def get_execution_plan(query, username, host, password):
         json_plan['execution_plan'].append(dict(zip([d[0] for d in cursor.description], row)))
 
     return json.dumps(json_plan)
-
-
-@app.route('/test1', methods=['GET'])
-def test():
-    return "anas"
 
 
 if __name__ == '__main__':
