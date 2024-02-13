@@ -100,7 +100,7 @@ export function DbConnection() {
 
 
 
-function DatabaseIcon(props) {
+function DatabaseIcon(props:any) {
   return (
     <svg
       {...props}
