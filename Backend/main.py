@@ -111,12 +111,25 @@ def get_execution_plan(query, username, host, password):
     cursor.execute(f"EXPLAIN PLAN FOR {query}")
     cursor.execute(f"select * from table(dbms_xplan.display(null, null, 'SERIAL'))")
     plan = cursor.fetchall()
-    # Process the plan into JSON format
-    json_plan = {'execution_plan': []}
-    for row in plan:
-        json_plan['execution_plan'].append(dict(zip([d[0] for d in cursor.description], row)))
-
-    return json.dumps(json_plan)
+    # Format execution plan
+    formatted_execution_plan = []
+    for row in plan[5:]:
+                if '-' in row[0]:
+                    # If the row contains only dashes, append it as a single entry
+                   continue
+                else:
+                    row_values = [value.strip() for value in row[0].split("|")]
+                    print(row_values)
+                    formatted_execution_plan.append({
+                        'Id': row_values[1],
+                        'Operation': row_values[2],
+                        'Name': row_values[3],
+                        'Rows': row_values[4],
+                        'Bytes': row_values[5],
+                        'Cost': row_values[6],
+                        'Time': row_values[7] 
+                    })
+    return json.dumps(formatted_execution_plan)
 
 
 if __name__ == '__main__':
