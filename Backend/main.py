@@ -78,12 +78,7 @@ def connect_to_db():
 def generate_large_csv():
     def generate():
         for i in range(1):
-            yield f""""data: # | Column 1 Header | Column 2 Header | Column 3 Header |
-|-----------------|-----------------|-----------------|
-| Row 1, Column 1 | Row 1, Column 2 | Row 1, Column 3 |
-| Row 2, Column 1 | Row 2, Column 2 | Row 2, Column 3 |
-| Row 3, Column 1 | Row 3, Column 2 | Row 3, Column 3 |
- \n\n"""
+            yield f"""This is a paragraph of text. You can *bold* text, italicize text, or create [links](https://www.example.com) \n\n"""
 
     return generate(), {"Content-Type": "text/event-stream"}
 
