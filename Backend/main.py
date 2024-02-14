@@ -10,13 +10,20 @@ import oracledb
 from transformers import AutoPeftModelForCausalLM, AutoTokenizer
 from transformers import pipeline
 
+from dotenv import dotenv_values
+config = dotenv_values()
+
 app = Flask(__name__)
 CORS(app)
 
+QUERY_DATASET = config.get("QUERY_DATASET")
+MODEL = config.get("MODEL")
+HUB_MODEL_ID = config.get("HUB_MODEL_ID")
+HUB_ORGANIZATION = config.get("HUB_ORGANIZATION")
+HUB_TOKEN = config.get("HUB_TOKEN")
 
-base_model = "anas72/query_optimization_models"
-model = AutoPeftModelForCausalLM.from_pretrained(base_model, load_in_4bit=True)
-tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
+model = AutoPeftModelForCausalLM.from_pretrained(MODEL, load_in_4bit=True)
+tokenizer = AutoTokenizer.from_pretrained(MODEL, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
 pipe = pipeline(task="text-generation", model=model, tokenizer=tokenizer, max_length=300)

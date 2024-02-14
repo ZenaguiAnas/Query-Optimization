@@ -12,10 +12,18 @@ from transformers import (
 from peft import LoraConfig
 from trl import SFTTrainer
 
+from dotenv import dotenv_values
+config = dotenv_values()
+
+QUERY_DATASET = config.get("QUERY_DATASET")
+MODEL = config.get("MODEL")
+HUB_MODEL_ID = config.get("HUB_MODEL_ID")
+HUB_ORGANIZATION = config.get("HUB_ORGANIZATION")
+HUB_TOKEN = config.get("HUB_TOKEN")
+
 def train_model():
     # Load the dataset
-    query_dataset = "anas72/query_optimization"
-    dataset = load_dataset(query_dataset, split="train")
+    dataset = load_dataset(QUERY_DATASET, split="train")
 
     compute_dtype = getattr(torch, "float16")
 
@@ -27,14 +35,14 @@ def train_model():
     )
 
     model = AutoModelForCausalLM.from_pretrained(
-        "anas72/query_optimization_models",
+        MODEL,
         quantization_config=quant_config,
         device_map={"": 0}
     )
     model.config.use_cache = True
     model.config.pretraining_tp = 1
 
-    tokenizer = AutoTokenizer.from_pretrained("anas72/query_optimization_models", trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL, trust_remote_code=True)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
@@ -65,9 +73,9 @@ def train_model():
         lr_scheduler_type="constant",
         report_to="tensorboard",
         push_to_hub=True,
-        push_to_hub_model_id="query_optimization_models",
-        push_to_hub_organization="anas72",
-        push_to_hub_token="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"
+        push_to_hub_model_id=HUB_MODEL_ID,
+        push_to_hub_organization=HUB_ORGANIZATION,
+        push_to_hub_token=HUB_TOKEN
     )
 
     trainer = SFTTrainer(
@@ -82,8 +90,8 @@ def train_model():
     )
 
     # trainer.train()
-    trainer.model.push_to_hub(repo_id="query_optimization_models", token="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")
-    trainer.tokenizer.push_to_hub(repo_id="query_optimization_models", token="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")
+    trainer.model.push_to_hub(repo_id=HUB_MODEL_ID, token=HUB_TOKEN)
+    trainer.tokenizer.push_to_hub(repo_id=HUB_MODEL_ID, token=HUB_TOKEN)
 
 if __name__ == "__main__":
     train_model()

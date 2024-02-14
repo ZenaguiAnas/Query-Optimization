@@ -19,6 +19,8 @@ from transformers import (
 from peft import LoraConfig
 from trl import SFTTrainer
 
+BASE
+
 # %%
 # base_model = "meta-llama/Llama-2-7b-hf"
 base_model = "NousResearch/Llama-2-7b-chat-hf"
