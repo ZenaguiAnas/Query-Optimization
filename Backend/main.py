@@ -37,7 +37,7 @@ CORS(app)
 
 #     return chatbot_response
 
-@app.route('/api/optimize', methods=['POST'])
+@app.route('/optimize', methods=['POST'])
 def chatbot_llama():
     query = request.json.get('query')
     chatbot_response = optimizer(query)

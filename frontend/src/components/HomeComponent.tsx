@@ -25,7 +25,7 @@ export default function HomeComponent() {
     const [sqlQuery, setSqlQuery] = useState("");
     const [isValidQuery, setValidationResult] = useState(false);
     const [queryResult, setQueryResult] = useState<Data | null>(null);
-    const [streamData, setStreamData] = useState('### Optimized Query\n\n');
+    const [streamData, setStreamData] = useState("");
     const [executionPlan, setExecutionPlan] = useState("");
     const router = useRouter();
 
@@ -39,32 +39,34 @@ export default function HomeComponent() {
         }
     }, []);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/stream-optimization');
-                if (!response?.ok || response?.status !== 200 || !response?.body) {
-                    toast.error("Error fetching data")
-                    return
-                }
-                const reader = response.body.getReader();
-
-                while (true) {
-                    const {done, value} = await reader.read();
-                    if (done) break;
-                    setStreamData(prevText => prevText + new TextDecoder().decode(value));
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
+    const optimizeQuery = async () => {
+        try {
+            const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/optimize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({query: sqlQuery}),
+            });
+            // const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/stream-optimization');
+            if (!response?.ok || response?.status !== 200 || !response?.body) {
+                toast.error("Error fetching data")
+                return
             }
-        };
+            const body = await response.json();
+            setStreamData(body.chatbot_response);
+            // const reader = response.body.getReader();
+            //
+            // while (true) {
+            //     const {done, value} = await reader.read();
+            //     if (done) break;
+            //     setStreamData(prevText => prevText + new TextDecoder().decode(value));
+            // }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
 
-        fetchData();
-
-        return () => {
-            // Cleanup
-        };
-    }, []);
 
     const handleChangeDatabase = () => {
         // Supprimer les informations de localStorage
@@ -213,7 +215,6 @@ export default function HomeComponent() {
                         <ReactMarkdown>
                             {streamData}
                         </ReactMarkdown>
-                        {/* todo: add optimized query here */}
                     </div>
                 </CardContent>
                 <CardFooter className="flex gap-4">
@@ -221,24 +222,27 @@ export default function HomeComponent() {
                         Syntax</Button>
                     <Button disabled={!isValidQuery} className="bg-blue-500" onClick={executeQuery}>Execute
                         Query </Button>
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button disabled={!isValidQuery} className="bg-orange-500" onClick={showExecutionPlan}>
-                                    Execution Plan
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent style={{width:"hana mochkil wa9ila "}}>
-                                <DialogHeader>
-                                    <DialogTitle>Your Execution Plan</DialogTitle>
-                                    <DialogDescription>
-                                        {executionPlan}
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <DialogClose>
-                                    <Button type="submit">Close</Button>
-                                </DialogClose>
-                            </DialogContent>
-                        </Dialog>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button disabled={!isValidQuery} className="bg-orange-500" onClick={showExecutionPlan}>
+                                Execution Plan
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent style={{width: "hana mochkil wa9ila "}}>
+                            <DialogHeader>
+                                <DialogTitle>Your Execution Plan</DialogTitle>
+                                <DialogDescription>
+                                    {executionPlan}
+                                </DialogDescription>
+                            </DialogHeader>
+                            <DialogClose>
+                                <Button type="submit">Close</Button>
+                            </DialogClose>
+                        </DialogContent>
+                    </Dialog>
+                    <Button disabled={!isValidQuery} className="bg-red-500" onClick={optimizeQuery}>Optimize your query
+                        using ai
+                    </Button>
 
 
                 </CardFooter>
