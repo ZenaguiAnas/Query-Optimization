@@ -7,8 +7,9 @@ from flask_cors import CORS
 import oracledb
 # from src.optimizer import optimize_query
 
-from transformers import AutoPeftModelForCausalLM, AutoTokenizer
-from transformers import pipeline
+# from transformers import AutoPeftModelForCausalLM, AutoTokenizer
+# from transformers import pipeline
+from src.model import optimizer
 
 from dotenv import dotenv_values
 config = dotenv_values()
@@ -16,39 +17,45 @@ config = dotenv_values()
 app = Flask(__name__)
 CORS(app)
 
-QUERY_DATASET = config.get("QUERY_DATASET")
-MODEL = config.get("MODEL")
-HUB_MODEL_ID = config.get("HUB_MODEL_ID")
-HUB_ORGANIZATION = config.get("HUB_ORGANIZATION")
-HUB_TOKEN = config.get("HUB_TOKEN")
+# QUERY_DATASET = config.get("QUERY_DATASET")
+# MODEL = config.get("MODEL")
+# HUB_MODEL_ID = config.get("HUB_MODEL_ID")
+# HUB_ORGANIZATION = config.get("HUB_ORGANIZATION")
+# HUB_TOKEN = config.get("HUB_TOKEN")
 
-model = AutoPeftModelForCausalLM.from_pretrained(MODEL, load_in_4bit=True)
-tokenizer = AutoTokenizer.from_pretrained(MODEL, trust_remote_code=True)
-tokenizer.pad_token = tokenizer.eos_token
-tokenizer.padding_side = "right"
-pipe = pipeline(task="text-generation", model=model, tokenizer=tokenizer, max_length=300)
+# model = AutoPeftModelForCausalLM.from_pretrained(MODEL, load_in_4bit=True)
+# tokenizer = AutoTokenizer.from_pretrained(MODEL, trust_remote_code=True)
+# tokenizer.pad_token = tokenizer.eos_token
+# tokenizer.padding_side = "right"
+# pipe = pipeline(task="text-generation", model=model, tokenizer=tokenizer, max_length=300)
 
 
-def optimize_query(query):
-    prompt = "You are a chatbot specializing in optimizing SQL queries within the Oracle syntax ecosystem. Your primary functionality is to provide optimized query. "
-    result = pipe(f"<s>[INST] {prompt+query} [/INST]")
-    chatbot_response = result[0]['generated_text']
+# def optimize_query(query):
+#     prompt = "You are a chatbot specializing in optimizing SQL queries within the Oracle syntax ecosystem. Your primary functionality is to provide optimized query. "
+#     result = pipe(f"<s>[INST] {prompt+query} [/INST]")
+#     chatbot_response = result[0]['generated_text']
 
-    print(chatbot_response)
+#     print(chatbot_response)
 
-    return chatbot_response
-
+#     return chatbot_response
 
 @app.route('/api/optimize', methods=['POST'])
-def optimize():
-    data = request.get_json()
-    input_query = data.get('input_query')
+def chatbot_llama():
+    query = request.json.get('query')
+    chatbot_response = optimizer(query)
+    return jsonify({'chatbot_response': chatbot_response})
 
-    if input_query:
-        optimized_query = optimize_query(input_query)
-        return jsonify({'optimized_query': optimized_query})
 
-    return jsonify({'error': 'Input query not provided'}), 400
+# @app.route('/api/optimize', methods=['POST'])
+# def optimize():
+#     data = request.get_json()
+#     input_query = data.get('input_query')
+
+#     if input_query:
+#         optimized_query = optimize_query(input_query)
+#         return jsonify({'optimized_query': optimized_query})
+
+#     return jsonify({'error': 'Input query not provided'}), 400
 
 
 @app.route('/ValidateSQL', methods=['POST'])
