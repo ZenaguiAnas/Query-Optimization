@@ -1,6 +1,6 @@
 # %%
-%%capture
-%pip install accelerate peft bitsandbytes transformers trl
+# %%capture
+# %pip install accelerate peft bitsandbytes transformers trl
 
 # %%
 import os
@@ -18,6 +18,8 @@ from transformers import (
 )
 from peft import LoraConfig
 from trl import SFTTrainer
+
+BASE
 
 # %%
 # base_model = "meta-llama/Llama-2-7b-hf"
